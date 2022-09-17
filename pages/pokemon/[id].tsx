@@ -4,12 +4,20 @@ import { pokeApi } from '../../api'
 import { Layout } from '../../components/layouts'
 import { Pokemon } from '../../interfaces'
 import { HeartIcon } from '../../assets/icons'
+import { localFavorites } from '../../utils';
+import { useEffect, useState } from 'react';
 
 interface Props {
   pokemon: Pokemon;
 }
 
 const PokemonPage: NextPage<Props> = ({ pokemon }) => {
+  const [isFavorite, setIsFavorite] = useState<boolean>(localFavorites.isFavorite(pokemon.id))
+  const onToogleFavorite = () => {
+    setIsFavorite(!isFavorite)
+    localFavorites.toogleFavorite(pokemon.id)
+  }
+
   return (
     <Layout title={pokemon.name}>
       <Grid.Container gap={2}>
@@ -19,8 +27,9 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
               <Button
                 auto
                 color="error"
-                flat
+                bordered={!isFavorite}
                 icon={<HeartIcon fill="currentColor" filled />}
+                onClick={onToogleFavorite}
               />
             </Card.Header>
             <Card.Body>
