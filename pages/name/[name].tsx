@@ -105,7 +105,7 @@ const PokemonByNamePage: NextPage<Props> = ({ pokemon }) => {
 
 
 // You should use getStaticPaths if you’re statically pre-rendering pages that use dynamic routes
-
+//StaticPaths siempre necesita trabajar en conjunto con StaticProps
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
   const { data } = await pokeApi.get<PokemonListResponse>('/pokemon?limit=151')
   const pokemons: string[] = data.results.map(pokemon => pokemon.name)
@@ -113,17 +113,27 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
     paths: pokemons.map(name => ({
       params: { name }
     })),
-    fallback: false
+    fallback: 'blocking' //GENERACION DE PAGINAS QUE NO SE GENERARON EN BUILD TIME - ISG
   }
 }
-
+//StaticProps no siempre necesesitara a StaticPaths
 export const getStaticProps: GetStaticProps = async ({params}) => {
   const { name } = params as  {name:string}
   const pokemon = await getPokemonInfo(name)
+  //VALIDACION PARA TENER EL ISG
+  if(!pokemon) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false
+      }
+    }
+  }
   return {
     props: {
       pokemon
-    }
+    },
+    revalidate: 86400 //Re revalida la información de la página cada 24hras
   }
 }
 
